@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import glob
-from effnet import Effnet
+from effnet import Effnetb7
 from sklearn import model_selection
 from dataset import MaskImDataLoader
 import config
@@ -49,7 +49,8 @@ train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
-        shuffle=True
+        shuffle=True,
+        pin_memory=True
 )
 
 # Make val data loader
@@ -64,11 +65,12 @@ val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
-        shuffle=False
+        shuffle=False,
+        pin_memory=True
 )
 
 # load model with 5 classes
-model = Effnet()
+model = Effnetb7()
 
 optimiser = torch.optim.Adam(model.parameters(),  lr=3e-4)
 model.to(config.DEVICE)
@@ -98,7 +100,7 @@ for epoch in range(config.EPOCHS):
         torch.save({
             'model_state_dict': model.state_dict(),
             'loss': val_loss
-            }, f'./models/car_perseption.pt')
+            }, f'./models/b7mem_pin.pt')
         print('Model saved')
 
     # Dont show if headless (server)

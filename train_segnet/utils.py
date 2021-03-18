@@ -4,7 +4,6 @@ import config
 import time
 from tqdm import tqdm
 
-
 def train_fn(model, data_loader, criterion, optimiser, scaler):
     model.train()
     final_loss = 0

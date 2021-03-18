@@ -1,5 +1,5 @@
 DATA_DIR = './comma10k'
-BATCH_SIZE = 16
+BATCH_SIZE = 3
 # Resizes to a square
 RESIZE = 512
 NUM_WORKERS = 16

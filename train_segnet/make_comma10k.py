@@ -8,7 +8,7 @@ from tqdm import tqdm
 cat_mask_save_dir = os.path.join('comma10k', 'cat_masks')
 mask_dir = os.path.join('comma10k', 'masks')
 
-m_split = '\\' if os.name == 'nt' else '/'
+m_split = "\\" if os.name == "nt" else "\\"
 
 def mask2cat(mask_paths):
     print('Convering masks')
@@ -27,5 +27,5 @@ if __name__ == "__main__":
         os.mkdir(cat_mask_save_dir)
 
     # Get all mask paths
-    mask_file_paths = glob.glob(os.path.join(mask_dir, '*.png')
+    mask_file_paths = glob.glob(os.path.join(mask_dir, '*.png'))
     mask2cat(mask_file_paths)

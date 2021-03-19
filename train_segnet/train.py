@@ -9,6 +9,7 @@ import utils
 import cv2
 from tqdm import tqdm
 import numpy as np
+import os
 
 
 def pred_to_hooman(pred):
@@ -23,8 +24,12 @@ def pred_to_hooman(pred):
 
 
 # Load data
-mask_paths = glob.glob(f'./comma10k/cat_masks/*.png')
-image_paths = [f'./comma10k/imgs/{x.split("/")[-1]}' for x in mask_paths]
+mask_paths = glob.glob(os.path.join('comma10k', 'cat_masks', '*.png'))
+m_split = '\\' if os.name == 'ns' else '/'
+image_paths = [os.path.join('comma10k', 'imgs', x.split(m_split)[-1]) for x in mask_paths]
+
+# save dir
+save_dir = os.path.join('models', 'b7.pth')
 
 # Make test, train split
 (
@@ -49,8 +54,7 @@ train_dataloader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
-        shuffle=True,
-        pin_memory=True
+        shuffle=True
 )
 
 # Make val data loader
@@ -65,8 +69,7 @@ val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=config.BATCH_SIZE,
         num_workers=config.NUM_WORKERS,
-        shuffle=False,
-        pin_memory=True
+        shuffle=False
 )
 
 # load model with 5 classes
@@ -100,7 +103,7 @@ for epoch in range(config.EPOCHS):
         torch.save({
             'model_state_dict': model.state_dict(),
             'loss': val_loss
-            }, f'./models/b7mem_pin.pt')
+            }, save_dir)
         print('Model saved')
 
     # Dont show if headless (server)

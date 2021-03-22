@@ -29,7 +29,7 @@ m_split = '\\' if os.name == 'ns' else '/'
 image_paths = [os.path.join('comma10k', 'imgs', x.split(m_split)[-1]) for x in mask_paths]
 
 # save dir
-save_dir = os.path.join('models', 'b7.pth')
+save_dir = os.path.join('models', 'b7_512_256.pth')
 
 # Make test, train split
 (
@@ -84,7 +84,7 @@ if config.FP16:
 else:
     scaler = None
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss().to(config.DEVICE)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimiser, factor=0.3, patience=3, verbose=True
 )

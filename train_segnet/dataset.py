@@ -10,9 +10,7 @@ import cv2
 
 def strong_aug(p=0.5):
     return Compose([
-        RandomRotate90(),
         HorizontalFlip(),
-        Transpose(),
         OneOf([
             IAAAdditiveGaussianNoise(),
             GaussNoise(),
@@ -61,8 +59,8 @@ class MaskImDataLoader:
         mask = cv2.imread(self.mask_paths[item], cv2.IMREAD_GRAYSCALE)
 
         if self.resize is not None:
-            image = cv2.resize(image, (self.resize, self.resize))
-            mask = cv2.resize(mask, (self.resize, self.resize))
+            image = cv2.resize(image, self.resize)
+            mask = cv2.resize(mask, self.resize)
 
         # add augmentation to image
         augmented = self.aug(image=image, mask=mask)

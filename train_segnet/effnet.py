@@ -71,8 +71,8 @@ class Effnetb7(nn.Module):
         return x
 
 if __name__=="__main__":
-    m = Effnet()
-    in_x = torch.randn((1,3,512,512))
+    m = Effnetb7()
+    in_x = torch.randn((5,3,512,256))
     m(in_x)
 
         

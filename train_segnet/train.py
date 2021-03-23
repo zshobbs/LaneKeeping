@@ -29,7 +29,7 @@ m_split = '\\' if os.name == 'ns' else '/'
 image_paths = [os.path.join('comma10k', 'imgs', x.split(m_split)[-1]) for x in mask_paths]
 
 # save dir
-save_dir = os.path.join('models', 'b7_512_256.pth')
+save_dir = os.path.join('models', f'{config.MODEL_NAME}.pth')
 
 # Make test, train split
 (
@@ -90,7 +90,17 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 )
 
 best_loss = 99999
-for epoch in range(config.EPOCHS):
+start_epoch = 0
+
+if config.LOAD and os.path.isfile(save_dir):
+    cp = torch.load(save_dir)
+    model.load_state_dict(cp['state_dict'])
+    start_epoch = cp['epoch']
+    best_loss = cp['loss']
+    optimiser.load_state_dict(cp['optimiser'])
+    scheduler.load_state_dict(cp['scheduler'])
+
+for epoch in range(start_epoch, config.EPOCHS):
 
     _, train_loss = utils.train_fn(model, train_dataloader, criterion, optimiser, scaler)
     prediction, val_loss = utils.test_fn(model, val_dataloader, criterion)
@@ -101,7 +111,10 @@ for epoch in range(config.EPOCHS):
     if val_loss < best_loss:
         best_loss = val_loss
         torch.save({
-            'model_state_dict': model.state_dict(),
+            'state_dict': model.state_dict(),
+            'epoch': epoch + 1,
+            'optimiser': optimiser.state_dict(),
+            'scheduler': scheduler.state_dict(),
             'loss': val_loss
             }, save_dir)
         print('Model saved')

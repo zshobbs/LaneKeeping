@@ -1,10 +1,10 @@
 DATA_DIR = './comma10k'
-BATCH_SIZE = 6
-# Resizes to a square
-RESIZE = (512, 256)
+MODEL_NAME = 'b7_512_352'
+BATCH_SIZE = 3
+RESIZE = (512, 352)
 NUM_WORKERS = 12
 EPOCHS = 200
 DEVICE = 'cuda'
-LOAD = None
+LOAD = True
 HEADLESS = False
 FP16 = True

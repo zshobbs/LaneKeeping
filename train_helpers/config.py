@@ -1,0 +1,10 @@
+DATA_DIR = './comma10k'
+MODEL_NAME = 'b900'
+BATCH_SIZE = 12
+RESIZE = (512, 352)
+NUM_WORKERS = 12
+EPOCHS = 200
+DEVICE = 'cuda'
+LOAD = True
+HEADLESS = False
+FP16 = True

@@ -3,4 +3,6 @@ videos/
 csv_files/
 comma10k/
 __pycache__
-.env
+.env/
+env/
+*.swp

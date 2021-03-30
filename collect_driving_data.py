@@ -5,10 +5,12 @@ import serial
 import csv
 
 class Camera:
-    def __init__(self):
-        self.cap = None
+    def __init__(self, cam_num):
         self.fWidth  = 1280
         self.fHight = 720
+        self.cap = cv2.VideoCapture(cam_num)
+        self.cap.set(4, self.fHight)
+        self.cap.set(3, self.fWidth)
         self.fourcc = cv2.VideoWriter_fourcc('M','J','P','G')
         self.out = None
         self.frame_count = None
@@ -19,14 +21,14 @@ class Camera:
             # cameara is upsidedown in car so flip
             # flip both axis
             self.im = cv2.flip(self.im, -1)
-            self.out.write(self.im)
-            self.frame_count += 1
-        return self.ret, self.im, self.frame_count
+        return self.ret, self.im
 
-    def new_vid(self, cam_num, vid_save):
-        self.cap = cv2.VideoCapture(cam_num)
-        self.cap.set(4, self.fHight)
-        self.cap.set(3, self.fWidth)
+    def save_image(self):
+        self.out.write(self.im)
+        self.frame_count += 1
+        return self.frame_count
+
+    def new_vid(self, vid_save):
         self.out = cv2.VideoWriter(
                 f'./driving_data/videos/{vid_save}.mp4',
                 self.fourcc,
@@ -34,9 +36,16 @@ class Camera:
                 (self.fWidth, self.fHight))
         self.frame_count = 0
 
+    def end_vid(self):
+        self.out.release()
+
     def clean_up(self):
         self.cap.release()
-        self.out.release()
+        try:
+            self.out.release()
+        except Exception as e:
+            print(e)
+            print('Recording alread colsed')
 
 class SteeringAngle:
     '''
@@ -57,33 +66,54 @@ class SteeringAngle:
 
     def get_angle(self):
         self.ser.write(b'1')
-        # remove the newline simbal for printing
         x = int(self.ser.readline().decode())
         # convert from raw value to degress
         # divide by 1200 becase interupt working on change in V
         deg = (x/1200)*360
-        print(deg)
         return deg
 
+def add_text(im, text):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    col = (0,0,255)
+    org = (0, im.shape[0]-30)
+    thinkness = 5
+    font_scale = 2
+    return cv2.putText(im, text, org, font, font_scale, col, thinkness)
+
+def data_gather_loop(cam, angle):
+    print('New vid started')
+    vid_count = os.listdir("./driving_data/videos")
+    cam.new_vid(len(vid_count))
+    csv_file = open(f'./driving_data/csv_files/{len(vid_count)}.csv', 'w', newline='')
+    ret = True
+    while ret:
+        ret, frame = cam.get_frame()
+        if ret == True:
+            d = angle.get_angle()
+            frame_num = cam.save_image()
+            csv_file.write(f'{frame_num},{d}\n')
+            frame =  add_text(frame, 'Recodring')
+            cv2.imshow("Current Frame", frame)
+            key = cv2.waitKey(10)
+            if key == ord('q') or key == ord('d'):
+                cam.end_vid()
+                csv_file.close()
+                break
+    return key
+    
 if __name__=="__main__":
-    sa = SteeringAngle()
-    cam = Camera()
+    angle = SteeringAngle()
+    cam = Camera(2)
     key = None
     while key != ord('d'):
-        input('press enter to begin')
-        vid_count = os.listdir("./driving_data/videos")
-        cam.new_vid(2, len(vid_count))
-        csv_file = open(f'./driving_data/csv_files/{len(vid_count)}.csv', 'w', newline='')
-        ret = True
-        while ret:
-            ret, f, f_num = cam.get_frame()
-            if ret == True:
-                d = sa.get_angle()
-                csv_file.write(f'{f_num},{d}\n')
-                cv2.imshow("Current Frame", f)
-                key = cv2.waitKey(30)
-                if key == ord('q') or key == ord('d'):
-                    break
-        # close camera
-        cam.clean_up()
-        csv_file.close()
+        if key != ord('\r'):
+            ret, frame = cam.get_frame()
+            if ret:
+                frame =  add_text(frame, 'Not Recording')
+                cv2.imshow('Current Frame', frame)
+                key = cv2.waitKey(10)
+        else:
+            key = data_gather_loop(cam, angle)
+
+    # close camera
+    cam.clean_up()
